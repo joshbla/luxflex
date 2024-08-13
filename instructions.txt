@@ -1,0 +1,121 @@
+You cannot run Rust in a GitHub Codespace by default, it must be installed first. Let's get Rust installed in your GitHub Codespace. We'll call the project LuxFlex as you suggested. Here's how to set up Rust and start your project:
+
+1. Install Rust using rustup:
+   ```
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   ```
+   Choose the default installation when prompted.
+
+2. After installation, reload your shell:
+   ```
+   source $HOME/.cargo/env
+   ```
+
+3. Verify the installation:
+   ```
+   rustc --version
+   cargo --version
+   ```
+
+4. Initialize a new Rust project in the current directory:
+   ```
+   cargo init --name luxflex
+   ```
+
+5. Open the `Cargo.toml` file and add necessary dependencies. For our project, we'll need:
+   ```toml
+   [dependencies]
+   winapi = { version = "0.3", features = ["winuser", "wingdi"] }
+   systray = "0.4"
+   ```
+
+6. Replace the contents of `src/main.rs` with a basic structure:
+
+   ```rust
+   use std::error::Error;
+   use systray::Application;
+
+   struct LuxFlex {
+       brightness: i32,
+       dimmer_alpha: u8,
+   }
+
+   impl LuxFlex {
+       fn new() -> Result<Self, Box<dyn Error>> {
+           Ok(Self {
+               brightness: 50,
+               dimmer_alpha: 0,
+           })
+       }
+
+       fn run(&mut self) -> Result<(), Box<dyn Error>> {
+           let mut app = Application::new()?;
+           app.add_menu_item("Quit", |_| {
+               std::process::exit(0);
+           })?;
+           app.wait_for_message()?;
+           Ok(())
+       }
+   }
+
+   fn main() -> Result<(), Box<dyn Error>> {
+       let mut app = LuxFlex::new()?;
+       app.run()
+   }
+   ```
+
+7. Build and run your project:
+   ```
+   cargo build
+   cargo run
+   ```
+
+This sets up a basic structure for LuxFlex. The next steps would be to implement the brightness control and dimming functionality, and to create the custom slider UI. This setup creates the LuxFlex project in your current directory since you're already in a GitHub Codespace titled by your project.
+
+Remember, since we're using Windows-specific APIs, this code won't compile or run correctly in the Linux-based Codespace environment. You'll need to develop the core logic and structure in the Codespace, then test and finalize the Windows-specific parts on a Windows machine.
+
+
+
+
+To package your Rust application into an executable from a GitHub Codespace, you'll need to cross-compile for Windows. Here's how you can do this:
+
+1. First, add the Windows target to your Rust toolchain:
+
+   ```
+   rustup target add x86_64-pc-windows-gnu
+   ```
+
+2. Install the MinGW-w64 toolchain:
+
+   ```
+   sudo apt update
+   sudo apt install -y mingw-w64
+   ```
+
+3. Create a `.cargo/config.toml` file in your project root (if it doesn't exist) and add the following:
+
+   ```toml
+   [target.x86_64-pc-windows-gnu]
+   linker = "x86_64-w64-mingw32-gcc"
+   ar = "x86_64-w64-mingw32-gcc-ar"
+   ```
+
+4. Now you can build your Windows executable:
+
+   ```
+   cargo build --release --target x86_64-pc-windows-gnu
+   ```
+
+5. The executable will be in `target/x86_64-pc-windows-gnu/release/luxflex.exe`.
+
+6. To make the executable easier to find, you can copy it to your project root:
+
+   ```
+   cp target/x86_64-pc-windows-gnu/release/luxflex.exe .
+   ```
+
+7. Now you can download the `luxflex.exe` file from your GitHub Codespace to your Windows machine for testing.
+
+Remember that since this application uses Windows-specific APIs, it won't run correctly in the Linux-based Codespace environment. You'll only be able to compile it there, not run or test it.
+
+Also, keep in mind that cross-compiling might not always work perfectly, especially for applications with complex dependencies or those using system-specific features. You might encounter some issues that would require debugging on an actual Windows machine.

@@ -1,0 +1,11 @@
+[package]
+name = "luxflex"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+winapi = { version = "0.3.9", features = ["winuser", "wingdi", "physicalmonitorenumerationapi", "highlevelmonitorconfigurationapi"] }
+systray = "0.4"
+iced = { version = "0.4", features = ["glow"] }
+anyhow = "1.0"
+crossbeam-channel = "0.5"
